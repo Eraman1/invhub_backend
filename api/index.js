@@ -20,7 +20,7 @@ import cors from "cors";
 dotenv.config();
 const url =
   process.env.MONGO_URI ||
-  "mongodb+srv://admin:Gw8JuKUNRdyXDrSh@cluster0.vnisi.mongodb.net/battery-app?retryWrites=true&w=majority&appName=Cluster0";
+  "mongodb+srv://ianupam001:roM6buna5Hgl2DvK@cluster0.8bnifxi.mongodb.net/grills-db?retryWrites=true&w=majority&appName=Cluster0";
 mongoose
   .connect(url)
   .then(() => {
