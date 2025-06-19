@@ -33,7 +33,7 @@ mongoose
 const __dirname = path.resolve();
 
 const app = express();
-const allowedOrigins = [];
+const allowedOrigins = ["http://localhost:5173"];
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(cors());
 
