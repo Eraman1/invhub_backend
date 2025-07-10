@@ -14,6 +14,8 @@ import testimonialRoutes from "./routes/testimonial.route.js";
 import metatagsRoutes from "./routes/metatags.route.js";
 import formsRoute from "./routes/forms.route.js";
 import oilFormRoutes from "./routes/oilForm.route.js";
+import projectRoutes from './routes/projects.route.js';
+import warrantyCard from './routes/warrantyCard.route.js'
 import cookieParser from "cookie-parser";
 import path from "path";
 import cors from "cors";
@@ -33,7 +35,7 @@ mongoose
 const __dirname = path.resolve();
 
 const app = express();
-const allowedOrigins = ["http://localhost:5173"];
+const allowedOrigins = ["http://localhost:5173", "https://invhub-frontend.vercel.app/"];
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(cors());
 
@@ -48,6 +50,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/post", postRoutes);
 app.use("/api/product", productRoutes);
+app.use("/api/warrantyCard", warrantyCard);
 app.use("/api/service", serviceRoutes);
 app.use("/api/comment", commentRoutes);
 app.use("/api/slider", sliderRoutes);
@@ -57,6 +60,7 @@ app.use("/api/testimonial", testimonialRoutes);
 app.use("/api/forms", formsRoute);
 app.use("/api/metatags", metatagsRoutes);
 app.use("/api/oilForm", oilFormRoutes);
+app.use("/api/projects", projectRoutes)
 
 app.use(express.static(path.join(__dirname, "/client/dist")));
 

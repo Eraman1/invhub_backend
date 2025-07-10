@@ -1,50 +1,60 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
+
+const warrantyDetailSchema = new mongoose.Schema(
+  {
+    label: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    durationYears: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+  },
+  { _id: true }
+);
+
+const subProductSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    warrantyDetails: {
+      type: [warrantyDetailSchema],
+      required: true,
+      validate: (v) => Array.isArray(v) && v.length > 0,
+    },
+  },
+  { _id: true }
+);
 
 const productSchema = new mongoose.Schema(
   {
-    userId: {
+    productName: {
       type: String,
       required: true,
-    },
-    content: {
-      type: String,
-      required: true,
-    },
-    title: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    metaTitle: {
-      type: String,
-      required: false,
-    },
-    metaDescription: {
-      type: String,
-      required: false,
-    },
-    metaKeywords: {
-      type: String,
-      required: false,
-    },
-    otherMeta: {
-      type: String,
-      required: false,
+      trim: true,
     },
     image: {
       type: String,
-      default:
-        "https://www.hostinger.com/tutorials/wp-content/uploads/sites/2/2021/09/how-to-write-a-blog-post.png",
     },
-    slug: {
-      type: String,
-      required: true,
-      unique: true,
+
+    warrantyDetails: {
+      type: [warrantyDetailSchema],
+      default: [],
+    },
+
+    subProducts: {
+      type: [subProductSchema],
+      default: [],
     },
   },
   { timestamps: true }
 );
 
-const Product = mongoose.model('Product', productSchema);
-
-export default Product;
+const Products = mongoose.model("Product", productSchema);
+export default Products;

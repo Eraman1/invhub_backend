@@ -1,117 +1,81 @@
 import Product from "../models/product.model.js";
-import { errorHandler } from "../utils/error.js";
 
-
-export const create = async (req, res, next) => {
-  console.log("asdf");
-  if (!req.user.isAdmin) {
-    return next(errorHandler(403, "You are not allowed to create a product"));
-  }
-  if (!req.body.title || !req.body.content) {
-    return next(errorHandler(400, "Please provide all required fields"));
-  }
-  const slug = req.body.title
-    .split(" ")
-    .join("-")
-    .toLowerCase()
-    .replace(/[^a-zA-Z0-9-]/g, "");
-  const newProduct = new Product({
-    ...req.body,
-    slug,
-    userId: req.user.id,
-  });
+// CREATE
+export const createProduct = async (req, res) => {
   try {
-    const savedProduct = await newProduct.save();
-    res.status(201).json(savedProduct);
-  } catch (error) {
-    next(error);
+    const product = await Product.create(req.body);
+    res.status(201).json(product);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 };
 
-export const getproducts = async (req, res, next) => {
+// READ ALL
+export const getAllProducts = async (req, res) => {
   try {
-    const startIndex = parseInt(req.query.startIndex) || 0;
-    const limit = parseInt(req.query.limit) || 9;
-    const sortDirection = req.query.order === "asc" ? 1 : -1;
-    const products = await Product.find({
-      ...(req.query.userId && { userId: req.query.userId }),
-      ...(req.query.category && { category: req.query.category }),
-      ...(req.query.slug && { slug: req.query.slug }),
-      ...(req.query.productId && { _id: req.query.productId }),
-      ...(req.query.searchTerm && {
-        $or: [
-          { title: { $regex: req.query.searchTerm, $options: "i" } },
-          { content: { $regex: req.query.searchTerm, $options: "i" } },
-        ],
-      }),
-    })
-      .sort({ updatedAt: sortDirection })
-      .skip(startIndex)
-      .limit(limit);
+    const products = await Product.find().sort({ createdAt: -1 });
+    res.status(200).json(products);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 
-    const totalProducts = await Product.countDocuments();
+// READ ONE
+export const getProductById = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: "Product not found" });
+    res.json(product);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
 
-    const now = new Date();
-
-    const oneMonthAgo = new Date(
-      now.getFullYear(),
-      now.getMonth() - 1,
-      now.getDate()
-    );
-
-    const lastMonthProducts = await Product.countDocuments({
-      createdAt: { $gte: oneMonthAgo },
+// UPDATE
+export const updateProduct = async (req, res) => {
+  try {
+    const updated = await Product.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
     });
-
-    res.status(200).json({
-      products,
-      totalProducts,
-      lastMonthProducts,
-    });
-  } catch (error) {
-    next(error);
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 };
 
-export const deleteproduct = async (req, res, next) => {
-  if (!req.user.isAdmin || req.user.id !== req.params.userId) {
-    return next(
-      errorHandler(403, "You are not allowed to delete this product")
-    );
-  }
+// DELETE
+export const deleteProduct = async (req, res) => {
   try {
-    await Product.findByIdAndDelete(req.params.productId);
-    res.status(200).json("The product has been deleted");
-  } catch (error) {
-    next(error);
+    await Product.findByIdAndDelete(req.params.id);
+    res.json({ message: "Product deleted" });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 };
 
-export const updateproduct = async (req, res, next) => {
-  if (!req.user.isAdmin || req.user.id !== req.params.userId) {
-    return next(
-      errorHandler(403, "You are not allowed to update this product")
-    );
-  }
+// GET ONLY SUB PRODUCTS OF A PRODUCT
+export const getSubProductsByProductId = async (req, res) => {
   try {
-    const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.productId,
-      {
-        $set: {
-          title: req.body.title,
-          content: req.body.content,
-          category: req.body.category,
-          image: req.body.image,
-          metaTitle: req.body.metaTitle,
-          metaDescription: req.body.metaDescription,
-          metaKeywords: req.body.metaKeywords,
-          otherMeta: req.body.otherMeta,
-        },
-      },
-      { new: true }
-    );
-    res.status(200).json(updatedProduct);
-  } catch (error) {
-    next(error);
+    const product = await Product.findById(req.params.id).select("subProducts");
+    if (!product) return res.status(404).json({ message: "Product not found" });
+    res.json(product.subProducts);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// GET A SPECIFIC SUB PRODUCT
+export const getSingleSubProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.productId);
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    const subProduct = product.subProducts.id(req.params.subProductId);
+    if (!subProduct)
+      return res.status(404).json({ message: "Sub product not found" });
+
+    res.json(subProduct);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 };
