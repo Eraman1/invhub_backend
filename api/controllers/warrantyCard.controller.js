@@ -137,9 +137,11 @@ export const searchWarrantyCard = async (req, res) => {
         .json({ message: "Please provide invoiceNo or contactNo" });
     }
 
-    const query = invoiceNo
-      ? { invoiceNo: { $regex: invoiceNo, $options: "i" } }
-      : { contactNo: { $regex: contactNo, $options: "i" } };
+    // const query = invoiceNo
+    //   ? { invoiceNo: { $regex: invoiceNo, $options: "i" } }
+    //   : { contactNo: { $regex: contactNo, $options: "i" } };
+    // Strict match: no partial, no case-insensitive regex
+    const query = invoiceNo ? { invoiceNo } : { contactNo };
 
     const card = await WarrantyCard.findOne(query);
 
